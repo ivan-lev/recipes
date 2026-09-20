@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# iCloud Drive
+*.icloud
+
+# Cooklang local state
+.shopping-list
+.shopping-checked
