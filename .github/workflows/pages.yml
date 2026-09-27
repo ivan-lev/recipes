@@ -1,0 +1,66 @@
+name: Publish recipes to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  COOKCLI_VERSION: 0.37.0
+  COOKCLI_SHA256: 085e6d9886e3745e6562429b690d46bd416621d7f75daddba2cb5e7897189804
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Официальные сборки CookCLI не содержат русского языка, поэтому собираем
+      # CookCLI из исходников релиза с патчем .github/cookcli/ru-RU.patch.
+      # Готовый бинарник кешируется, пока не изменятся версия или патч.
+      - name: Restore CookCLI from cache
+        id: cookcli-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin/cook
+          key: cookcli-${{ env.COOKCLI_VERSION }}-${{ hashFiles('.github/cookcli/*.patch') }}
+
+      - name: Build CookCLI with Russian locale
+        if: steps.cookcli-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL -o cookcli.tar.gz "https://github.com/cooklang/cookcli/releases/download/v${COOKCLI_VERSION}/cook-${COOKCLI_VERSION}-source.tar.gz"
+          echo "${COOKCLI_SHA256}  cookcli.tar.gz" | sha256sum -c
+          tar xzf cookcli.tar.gz
+          cd "cookcli-${COOKCLI_VERSION}"
+          for p in "$GITHUB_WORKSPACE"/.github/cookcli/*.patch; do patch -p1 < "$p"; done
+          cargo build --release --locked
+          install -D target/release/cook ~/.local/bin/cook
+
+      - name: Build site
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          cook --version
+          cook build web _site --lang ru-RU --repo-url "${{ github.server_url }}/${{ github.repository }}"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

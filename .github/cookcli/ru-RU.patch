@@ -1,0 +1,441 @@
+diff --git a/docs/build.md b/docs/build.md
+index 0ed380a..e985ac3 100644
+--- a/docs/build.md
++++ b/docs/build.md
+@@ -91,7 +91,7 @@ The feed title is the localized "All Recipes" heading (see `--lang`). Like `--si
+   cook build web --lang fr-FR
+   ```
+ 
+-Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`. Bare language codes work too (`--lang fr`).
++Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `ru-RU`. Bare language codes work too (`--lang fr`).
+ 
+ Note that only the UI chrome (navigation, headings, labels) is translated — your recipe content is rendered as written.
+ 
+diff --git a/docs/server.md b/docs/server.md
+index 15bfc87..23a0491 100644
+--- a/docs/server.md
++++ b/docs/server.md
+@@ -62,7 +62,7 @@ cook server --cors-origin https://cook.example.com
+ - `--no-csrf-check` turns that same-origin enforcement off entirely, for both the API and the web UI's new-recipe form. Its former spelling, `--no-cors`, still works.
+ - The built-in editor gets its diagnostics and completions from a `cook lsp` subprocess, one per open edit tab, and the endpoint that starts them has no authentication. `--max-lsp-sessions` caps how many run at once (8 by default) so that a client which is not that editor cannot spawn them without bound; beyond the cap the websocket handshake is refused with `503` and the editor retries. Under `--host`, consider `--max-lsp-sessions 0`, which serves the recipes but never starts a subprocess for a remote client.
+ - The web interface supports recipe browsing, scaling, search, and shopping list management
+-- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
++- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `ru-RU`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
+ - Mobile-friendly responsive layout
+ 
+ ## Web feeds
+diff --git a/locales/en-US/common.ftl b/locales/en-US/common.ftl
+index d6a2b86..e256071 100644
+--- a/locales/en-US/common.ftl
++++ b/locales/en-US/common.ftl
+@@ -66,3 +66,9 @@ aria-dismiss = Dismiss
+ aria-decrease-scale = Decrease scale
+ aria-increase-scale = Increase scale
+ aria-close = Close
++
++# Menu and footer
++menu-keyboard-shortcuts = Keyboard Shortcuts
++menu-toggle-theme = Toggle Theme
++footer-built-with = Built with
++footer-view-source = View source
+diff --git a/locales/en-US/recipes.ftl b/locales/en-US/recipes.ftl
+index 1b4efd5..e320041 100644
+--- a/locales/en-US/recipes.ftl
++++ b/locales/en-US/recipes.ftl
+@@ -23,6 +23,9 @@ recipe-print = Print Recipe
+ recipe-added = Added!
+ recipe-main-section = Main
+ recipe-preparation = preparation
++recipe-start-cooking = Start Cooking
++recipe-cook = Cook
++recipe-download-source = Download .cook source
+ 
+ # Recipe Metadata
+ meta-course = Course
+diff --git a/locales/ru-RU/common.ftl b/locales/ru-RU/common.ftl
+new file mode 100644
+index 0000000..67eaf2d
+--- /dev/null
++++ b/locales/ru-RU/common.ftl
+@@ -0,0 +1,74 @@
++# Navigation
++nav-recipes = Рецепты
++nav-shopping-list = Список покупок
++nav-pantry = Кладовая
++nav-preferences = Настройки
++
++# Search
++search-placeholder = Поиск рецептов...
++search-no-results = Рецепты не найдены
++
++# Common Actions
++action-add = Добавить
++action-remove = Убрать
++action-edit = Редактировать
++action-save = Сохранить
++action-cancel = Отмена
++action-back = Назад
++action-delete = Удалить
++action-clear = Очистить
++action-print = Печать
++action-preview = Просмотр
++
++# Common Labels
++label-scale = Масштаб
++label-servings = Порции
++label-time = Время
++label-difficulty = Сложность
++label-name = Название
++label-description = Описание
++
++# Editor
++editor-unsaved-changes = Несохранённые изменения
++editor-saved = Сохранено
++editor-saving = Сохранение...
++editor-save-failed = Не удалось сохранить
++editor-placeholder = Введите рецепт...
++
++# LSP Status
++lsp-connected = LSP подключён
++lsp-disconnected = Отключено
++lsp-error = Ошибка LSP
++
++# New Recipe
++new-recipe = Новый рецепт
++new-recipe-path = Путь к рецепту
++new-recipe-filename = Название рецепта
++new-recipe-placeholder = Ужин/Итальянская/Паста карбонара
++new-recipe-hint = Формат: папка/название-рецепта
++new-recipe-create = Создать рецепт
++
++# Delete Recipe
++delete-recipe = Удалить рецепт
++delete-recipe-confirm = Вы уверены, что хотите удалить этот рецепт?
++delete-recipe-warning = Это действие нельзя отменить.
++
++# Errors
++error-title = Что-то пошло не так
++error-back-home = Вернуться к рецептам
++
++# Icon button labels (aria-label / title)
++aria-toggle-theme = Сменить тему
++aria-keyboard-shortcuts = Горячие клавиши
++aria-more-options = Ещё
++aria-preferences = Настройки
++aria-dismiss = Закрыть
++aria-decrease-scale = Уменьшить масштаб
++aria-increase-scale = Увеличить масштаб
++aria-close = Закрыть
++
++# Menu and footer
++menu-keyboard-shortcuts = Горячие клавиши
++menu-toggle-theme = Сменить тему
++footer-built-with = Сделано с помощью
++footer-view-source = Исходный код
+diff --git a/locales/ru-RU/pantry.ftl b/locales/ru-RU/pantry.ftl
+new file mode 100644
+index 0000000..764c570
+--- /dev/null
++++ b/locales/ru-RU/pantry.ftl
+@@ -0,0 +1,46 @@
++# Pantry
++pantry-title = Запасы в кладовой
++pantry-empty = Кладовая пуста
++pantry-section = { $name }
++pantry-no-config = Настройки кладовой не найдены
++pantry-create-config = Создайте файл pantry.conf, чтобы учитывать запасы
++pantry-configure = Настроить кладовую →
++pantry-no-items-section = В этом разделе ничего нет
++pantry-show-out-of-stock = Показать только закончившиеся
++pantry-no-out-of-stock = В этом разделе всё в наличии
++pantry-total-sections = Всего разделов:
++pantry-edit-config = Изменить настройки
++
++# Pantry Item Fields
++pantry-item-name = Название
++pantry-item-quantity = Количество
++pantry-item-quantity-short = Кол-во:
++pantry-item-bought = Куплено:
++pantry-item-bought-date = Дата покупки
++pantry-item-expire = Годен до:
++pantry-item-expire-date = Срок годности
++pantry-item-low = Мало при:
++pantry-item-low-threshold = Порог «заканчивается»
++
++# Pantry Actions
++pantry-add-item = Добавить
++pantry-add-pantry-item = Добавить в кладовую
++pantry-edit-item = Изменить
++pantry-remove-item = Убрать
++pantry-remove-confirm = Убрать { $name } из раздела «{ $section }»?
++pantry-confirm-remove-template = Убрать %s из раздела «%s»?
++pantry-mark-low = Отметить как заканчивающееся
++pantry-restock = Пополнить
++pantry-save = Сохранить
++pantry-cancel = Отмена
++pantry-section-label = Раздел
++pantry-section-select = Выберите раздел...
++pantry-section-freezer = Морозилка
++pantry-section-fridge = Холодильник
++pantry-section-pantry = Кладовая
++pantry-section-spices = Специи
++pantry-section-other = Другое
++pantry-optional = (необязательно)
++pantry-failed-add = Не удалось добавить
++pantry-failed-update = Не удалось обновить
++pantry-failed-remove = Не удалось убрать
+diff --git a/locales/ru-RU/preferences.ftl b/locales/ru-RU/preferences.ftl
+new file mode 100644
+index 0000000..d5231d3
+--- /dev/null
++++ b/locales/ru-RU/preferences.ftl
+@@ -0,0 +1,27 @@
++# Preferences
++pref-title = Настройки
++pref-language = Язык
++pref-theme = Тема
++pref-theme-light = Светлая
++pref-theme-dark = Тёмная
++pref-theme-auto = Как в системе
++
++# Configuration Paths
++pref-aisle-path = Настройки отделов магазина
++pref-pantry-path = Настройки кладовой
++pref-base-path = Папка с рецептами
++pref-not-configured = Не настроено
++
++# Version
++pref-version = Версия
++pref-version-text = { $version } - in food we trust
++
++# File Upload
++pref-upload-aisle = Загрузить настройки отделов
++pref-upload-pantry = Загрузить настройки кладовой
++pref-upload-success = Настройки загружены
++pref-upload-error = Не удалось загрузить настройки
++
++# Features
++pref-features = Функции
++pref-features-desc = Выберите, какие разделы показывать в меню.
+diff --git a/locales/ru-RU/recipes.ftl b/locales/ru-RU/recipes.ftl
+new file mode 100644
+index 0000000..154cd9b
+--- /dev/null
++++ b/locales/ru-RU/recipes.ftl
+@@ -0,0 +1,57 @@
++# Recipe Listing
++recipes-title = Все рецепты
++recipes-directory-title = { $name }
++recipes-empty = В этой папке нет рецептов.
++recipes-count =
++    { $count ->
++        [one] { $count } рецепт
++        [few] { $count } рецепта
++       *[many] { $count } рецептов
++    }
++
++# Recipe Display
++recipe-ingredients = Ингредиенты
++recipe-steps = Приготовление
++recipe-notes = Заметки
++recipe-cookware = Посуда
++recipe-timers = Таймеры
++recipe-tags = Теги
++recipe-add-to-shopping = В список покупок
++recipe-add-all-to-shopping = Всё в список покупок
++recipe-scale-label = Масштаб
++recipe-servings-label = порц.
++recipe-print = Распечатать рецепт
++recipe-added = Добавлено!
++recipe-main-section = Основное
++recipe-preparation = подготовка
++recipe-start-cooking = Начать готовить
++recipe-cook = Готовить
++recipe-download-source = Скачать исходник .cook
++
++# Recipe Metadata
++meta-course = Блюдо
++meta-cuisine = Кухня
++meta-diet = Диета
++meta-author = Автор
++meta-source = Источник
++meta-prep-time = Подготовка
++meta-cook-time = Готовка
++meta-total-time = Общее время
++meta-servings = Порции
++meta-difficulty = Сложность
++meta-description = Описание
++
++# Recipe Types
++recipe-type-menu = Меню
++
++# Today's Menu Banner
++todays-menu-title = Меню на сегодня
++todays-menu-from = Из
++todays-menu-view = Открыть меню
++
++# Sort Controls
++sort-by = Сортировка:
++sort-name = Название
++sort-modified = Изменено
++sort-created = Создано
++sort-direction-toggle = Сменить направление сортировки
+diff --git a/locales/ru-RU/shopping.ftl b/locales/ru-RU/shopping.ftl
+new file mode 100644
+index 0000000..0a30838
+--- /dev/null
++++ b/locales/ru-RU/shopping.ftl
+@@ -0,0 +1,36 @@
++# Shopping List
++shopping-title = Список покупок
++shopping-empty = Список покупок пуст
++shopping-no-items = Список покупок пуст. Добавьте рецепты, чтобы начать.
++shopping-no-recipes = Рецепты не выбраны. Добавьте их со страницы рецепта.
++shopping-item-count =
++    { $count ->
++        [one] { $count } позиция
++        [few] { $count } позиции
++       *[many] { $count } позиций
++    }
++shopping-from-recipe = Из рецепта «{ $recipeName }»
++shopping-clear-confirm = Вы уверены, что хотите очистить список?
++shopping-added = { $itemName } добавлено в список покупок
++shopping-removed = { $itemName } убрано из списка покупок
++shopping-cleared = Список покупок очищен
++shopping-export = Экспорт
++shopping-import = Импорт
++shopping-mark-done = Отметить как купленное
++shopping-mark-undone = Снять отметку
++shopping-selected-recipes = Выбранные рецепты
++shopping-clear-all = Очистить всё
++shopping-in-pantry = Уже есть в кладовой
++shopping-remove = Убрать
++shopping-add-recipes-first = Сначала добавьте рецепты
++shopping-failed-to-generate = Не удалось составить список покупок
++shopping-failed-to-add = Не удалось добавить в список покупок
++shopping-error = Ошибка
++shopping-print = Печать
++shopping-include-in-list = Включить в список покупок
++shopping-copy = Копировать
++shopping-copied = Скопировано!
++shopping-copy-failed = Не удалось скопировать
++shopping-copy-options = Параметры копирования
++shopping-copy-include-aisles = С названиями отделов
++shopping-copy-include-amounts = С количеством
+diff --git a/src/build/mod.rs b/src/build/mod.rs
+index c2601eb..ba3508d 100644
+--- a/src/build/mod.rs
++++ b/src/build/mod.rs
+@@ -74,7 +74,7 @@ pub struct WebBuildArgs {
+     ///
+     /// Accepts a BCP-47 tag like `de-DE`, or a bare language code like `de`
+     /// that matches a supported region. Supported: en-US, de-DE, nl-NL,
+-    /// fr-FR, es-ES, eu-ES, sv-SE.
++    /// fr-FR, es-ES, eu-ES, sv-SE, ru-RU.
+     #[arg(long, value_parser = parse_lang_arg)]
+     pub lang: Option<LanguageIdentifier>,
+ 
+@@ -121,7 +121,7 @@ pub struct WebBuildArgs {
+ fn parse_lang_arg(s: &str) -> Result<LanguageIdentifier, String> {
+     parse_supported_language(s).ok_or_else(|| {
+         format!(
+-            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE"
++            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE, ru-RU"
+         )
+     })
+ }
+diff --git a/src/web/language.rs b/src/web/language.rs
+index fac29cb..b2a767e 100644
+--- a/src/web/language.rs
++++ b/src/web/language.rs
+@@ -17,9 +17,10 @@ pub const FR_FR: LanguageIdentifier = langid!("fr-FR");
+ pub const ES_ES: LanguageIdentifier = langid!("es-ES");
+ pub const EU_ES: LanguageIdentifier = langid!("eu-ES");
+ pub const SV_SE: LanguageIdentifier = langid!("sv-SE");
++pub const RU_RU: LanguageIdentifier = langid!("ru-RU");
+ 
+ pub const SUPPORTED_LANGUAGES: &[LanguageIdentifier] =
+-    &[EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE];
++    &[EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE, RU_RU];
+ 
+ /// Per-request feature visibility flags, read from cookies.
+ #[derive(Clone, Copy, Debug)]
+@@ -238,6 +239,7 @@ mod locale_tests {
+     #[test]
+     fn test_system_locale_bare_language_code() {
+         assert_eq!(language_from_system_locale(Some("sv".into())), SV_SE);
++        assert_eq!(language_from_system_locale(Some("ru_RU.UTF-8".into())), RU_RU);
+     }
+ 
+     #[test]
+diff --git a/templates/base.html b/templates/base.html
+index b199814..ceeb1c8 100644
+--- a/templates/base.html
++++ b/templates/base.html
+@@ -337,12 +337,12 @@
+                                 {% endif %}
+                                 <button onclick="showShortcutsHelp(); document.getElementById('more-dropdown').classList.add('hidden');" class="menu-item">
+                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+-                                    <span>Keyboard Shortcuts</span>
++                                    <span>{{ tr.t("menu-keyboard-shortcuts") }}</span>
+                                 </button>
+                                 <button onclick="toggleTheme(); document.getElementById('more-dropdown').classList.add('hidden');" class="menu-item">
+                                     <svg class="w-4 h-4 hidden dark:block" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path></svg>
+                                     <svg class="w-4 h-4 block dark:hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+-                                    <span>Toggle Theme</span>
++                                    <span>{{ tr.t("menu-toggle-theme") }}</span>
+                                 </button>
+                             </div>
+                         </div>
+@@ -357,11 +357,11 @@
+ 
+         {% if static_mode %}
+         <footer class="mt-12 mb-6 text-center text-sm text-faint print:hidden">
+-            Built with
++            {{ tr.t("footer-built-with") }}
+             <a href="https://cooklang.org/cli/" class="text-accent-text hover:underline" target="_blank" rel="noopener">CookCLI</a>
+             {% if let Some(url) = repo_url %}
+             &middot;
+-            <a href="{{ url }}" class="text-accent-text hover:underline" target="_blank" rel="noopener">View source</a>
++            <a href="{{ url }}" class="text-accent-text hover:underline" target="_blank" rel="noopener">{{ tr.t("footer-view-source") }}</a>
+             {% endif %}
+         </footer>
+         {% endif %}
+diff --git a/templates/preferences.html b/templates/preferences.html
+index 2971f46..4f21fc8 100644
+--- a/templates/preferences.html
++++ b/templates/preferences.html
+@@ -39,6 +39,10 @@
+                         class="language-btn btn {% if tr.lang_string() == "sv-SE" %}btn-primary{% endif %}">
+                     🇸🇪 Svenska
+                 </button>
++                <button onclick="setLanguage('ru-RU')" aria-pressed="{% if tr.lang_string() == "ru-RU" %}true{% else %}false{% endif %}"
++                        class="language-btn btn {% if tr.lang_string() == "ru-RU" %}btn-primary{% endif %}">
++                    Русский
++                </button>
+             </div>
+             <p class="text-sm text-muted mt-3">Your language preference will be saved in a cookie.</p>
+         </div>
+diff --git a/templates/recipe.html b/templates/recipe.html
+index 1e7c4a2..ac8762a 100644
+--- a/templates/recipe.html
++++ b/templates/recipe.html
+@@ -68,15 +68,15 @@
+                     <span class="hidden lg:inline">{{ tr.t("recipe-add-to-shopping") }}</span>
+                 </button>
+                 {% endif %}
+-                <button id="start-cooking-btn" onclick="startCookingMode()" class="btn btn-primary" title="Start Cooking">
++                <button id="start-cooking-btn" onclick="startCookingMode()" class="btn btn-primary" title="{{ tr.t("recipe-start-cooking") }}">
+                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                     </svg>
+-                    <span class="hidden lg:inline">Cook</span>
++                    <span class="hidden lg:inline">{{ tr.t("recipe-cook") }}</span>
+                 </button>
+                 {% if static_mode %}
+-                <a href="{{ prefix }}/recipe/{{ recipe_path }}.cook" download class="btn" title="Download .cook source">
++                <a href="{{ prefix }}/recipe/{{ recipe_path }}.cook" download class="btn" title="{{ tr.t("recipe-download-source") }}">
+                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"></path>
+                     </svg>

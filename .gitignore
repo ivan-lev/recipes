@@ -11,3 +11,6 @@ Icon?
 # Cooklang local state
 .shopping-list
 .shopping-checked
+
+# Static site build output
+_site/
