@@ -1,0 +1,57 @@
+diff --git a/src/web/builders.rs b/src/web/builders.rs
+index 08683c8..8fa7796 100644
+--- a/src/web/builders.rs
++++ b/src/web/builders.rs
+@@ -118,7 +118,9 @@ pub fn build_recipes_template(input: RecipesBuildInput<'_>) -> Result<RecipesTem
+                     created_at,
+                 )
+             } else {
+-                (Vec::new(), None, false, None, None)
++                let img_path = find_directory_image(&child.path)
++                    .and_then(|img| get_image_path(base_path, url_prefix, img.into_string()));
++                (Vec::new(), img_path, false, None, None)
+             };
+ 
+         items.push(RecipeItem {
+@@ -1160,6 +1162,18 @@ fn count_recipes_tree(tree: &cooklang_find::RecipeTree) -> Option<usize> {
+     Some(count)
+ }
+ 
++/// Find a cover image for a directory, stored next to it with the same stem
++/// (`Salads/` -> `Salads.jpg`), the same way a recipe's title image sits next
++/// to its `.cook` file.
++fn find_directory_image(dir: &Utf8Path) -> Option<Utf8PathBuf> {
++    let parent = dir.parent()?;
++    let name = dir.file_name()?;
++    ["jpg", "jpeg", "png", "webp"]
++        .iter()
++        .map(|ext| parent.join(format!("{name}.{ext}")))
++        .find(|path| path.is_file())
++}
++
+ fn get_image_path(base_path: &Utf8Path, prefix: &str, img_path: String) -> Option<String> {
+     tracing::debug!("Recipe image path from entry: {}", img_path);
+     // If it's a URL, use it directly
+diff --git a/templates/recipes.html b/templates/recipes.html
+index d94336b..b9dfe13 100644
+--- a/templates/recipes.html
++++ b/templates/recipes.html
+@@ -69,10 +69,18 @@
+         {% for item in items %}
+         {% if item.is_directory %}
+         <a href="{{ prefix }}/directory/{{ item.path }}{% if static_mode %}.html{% endif %}" data-type="directory" data-name="{{ item.name }}" class="recipe-card">
++            {% match item.image_path %}
++            {% when Some with (img) %}
++            <div class="h-48 bg-sunk overflow-hidden">
++                <img src="{{ img }}" alt="{{ item.name }}" class="w-full h-full object-cover">
++            </div>
++            <div class="p-6 flex-1">
++            {% when None %}
+             <div class="p-6 flex-1">
+                 <div class="recipe-card-icon">
+                     <span>📁</span>
+                 </div>
++            {% endmatch %}
+                 <h2 class="recipe-card-title">{{ item.name }}</h2>
+                 {% match item.count %}
+                 {% when Some with (count) %}

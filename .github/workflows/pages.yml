@@ -24,9 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Официальные сборки CookCLI не содержат русского языка, поэтому собираем
-      # CookCLI из исходников релиза с патчем .github/cookcli/ru-RU.patch.
-      # Готовый бинарник кешируется, пока не изменятся версия или патч.
+      # Официальные сборки CookCLI не умеют русский язык и обложки папок, поэтому
+      # собираем CookCLI из исходников релиза с патчами из .github/cookcli/.
+      # Готовый бинарник кешируется, пока не изменятся версия или патчи.
       - name: Restore CookCLI from cache
         id: cookcli-cache
         uses: actions/cache@v4
