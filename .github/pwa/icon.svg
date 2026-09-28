@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Фон на весь квадрат: iOS и Android сами скругляют углы.
+       Рисунок держим в центральном круге радиусом ~200px — безопасной зоне maskable-иконок. -->
+  <rect width="512" height="512" fill="#f97316"/>
+  <g fill="#fff">
+    <circle cx="256" cy="214" r="94"/>
+    <circle cx="168" cy="248" r="66"/>
+    <circle cx="344" cy="248" r="66"/>
+    <rect x="182" y="240" width="148" height="92"/>
+    <rect x="182" y="344" width="148" height="46" rx="10"/>
+  </g>
+  <g stroke="#f97316" stroke-width="10" stroke-linecap="round">
+    <line x1="232" y1="276" x2="232" y2="330"/>
+    <line x1="280" y1="276" x2="280" y2="330"/>
+  </g>
+</svg>
