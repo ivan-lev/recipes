@@ -53,6 +53,7 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cook --version
           cook build web _site --lang ru-RU --repo-url "${{ github.server_url }}/${{ github.repository }}"
+          .github/pwa/install.sh _site
 
       - uses: actions/upload-pages-artifact@v3
         with:
