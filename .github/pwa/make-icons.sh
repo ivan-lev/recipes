@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Нарезает PNG-иконки и favicon.ico из icon.png (квадрат, фон до краёв, без
-# прозрачности). Запускать локально на macOS после замены icon.png и коммитить
-# результат.
+# Нарезает PNG-иконки и favicon.ico из icon.png и icon-maskable.png (квадрат,
+# фон до краёв, без прозрачности; в maskable рисунок вписан в центральный круг
+# диаметром 80% стороны — Android обрезает её по своей маске). Запускать локально
+# на macOS после замены исходников и коммитить результат.
 set -euo pipefail
 
 cd "$(dirname "$0")"
 mkdir -p png
 
-render() { sips -z "$1" "$1" icon.png --out "png/$2" >/dev/null; }
+render() { sips -z "$2" "$2" "$1" --out "png/$3" >/dev/null; }
 
-render 16 favicon-16x16.png
-render 32 favicon-32x32.png
-render 180 apple-touch-icon.png
-render 192 android-chrome-192x192.png
-render 512 android-chrome-512x512.png
-# Фон залит до краёв, поэтому maskable-версии те же картинки.
-cp png/android-chrome-192x192.png png/android-chrome-192x192-maskable.png
-cp png/android-chrome-512x512.png png/android-chrome-512x512-maskable.png
+render icon.png 16 favicon-16x16.png
+render icon.png 32 favicon-32x32.png
+render icon.png 180 apple-touch-icon.png
+render icon.png 192 android-chrome-192x192.png
+render icon.png 512 android-chrome-512x512.png
+render icon-maskable.png 192 android-chrome-192x192-maskable.png
+render icon-maskable.png 512 android-chrome-512x512-maskable.png
 
 # ICO с PNG внутри: заголовок и по записи на каждый размер.
 python3 - png/favicon.ico png/favicon-16x16.png png/favicon-32x32.png <<'PY'
