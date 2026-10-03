@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
-# Рисует PNG-иконки и favicon.ico из icon.svg. Запускать локально после правки
-# icon.svg (нужен rsvg-convert: brew install librsvg) и коммитить результат.
+# Нарезает PNG-иконки и favicon.ico из icon.png (квадрат, фон до краёв, без
+# прозрачности). Запускать локально на macOS после замены icon.png и коммитить
+# результат.
 set -euo pipefail
 
 cd "$(dirname "$0")"
 mkdir -p png
 
-render() { rsvg-convert -w "$1" -h "$1" icon.svg -o "png/$2"; }
+render() { sips -z "$1" "$1" icon.png --out "png/$2" >/dev/null; }
 
 render 16 favicon-16x16.png
 render 32 favicon-32x32.png
 render 180 apple-touch-icon.png
 render 192 android-chrome-192x192.png
 render 512 android-chrome-512x512.png
-# Рисунок уже вписан в безопасную зону, поэтому maskable-версии те же картинки.
+# Фон залит до краёв, поэтому maskable-версии те же картинки.
 cp png/android-chrome-192x192.png png/android-chrome-192x192-maskable.png
 cp png/android-chrome-512x512.png png/android-chrome-512x512-maskable.png
 

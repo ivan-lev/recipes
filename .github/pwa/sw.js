@@ -1,6 +1,6 @@
 // Service worker сайта с рецептами: страницы и картинки, которые уже
 // открывались, остаются доступны без интернета.
-const CACHE = 'recipes-v2';
+const CACHE = 'recipes-v3';
 
 self.addEventListener('install', (event) => {
   // Главная страница нужна сразу, чтобы приложение открывалось офлайн.
