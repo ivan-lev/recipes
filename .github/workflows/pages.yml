@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  COOKCLI_VERSION: 0.37.0
-  COOKCLI_SHA256: 085e6d9886e3745e6562429b690d46bd416621d7f75daddba2cb5e7897189804
+  COOKCLI_VERSION: 0.38.1
+  COOKCLI_SHA256: aa3e37de1ff9302e1a160ead13a726637d851b71c9b8cbc9def5aa935c9f3017
 
 jobs:
   build:

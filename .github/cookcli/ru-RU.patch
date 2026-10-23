@@ -1,36 +1,36 @@
 diff --git a/docs/build.md b/docs/build.md
-index 0ed380a..e985ac3 100644
+index 146119d..ab21092 100644
 --- a/docs/build.md
 +++ b/docs/build.md
 @@ -91,7 +91,7 @@ The feed title is the localized "All Recipes" heading (see `--lang`). Like `--si
    cook build web --lang fr-FR
    ```
  
--Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`. Bare language codes work too (`--lang fr`).
-+Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `ru-RU`. Bare language codes work too (`--lang fr`).
+-Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `it-IT`, `ja-JP`. Bare language codes work too (`--lang fr`).
++Supported languages: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `it-IT`, `ja-JP`, `ru-RU`. Bare language codes work too (`--lang fr`).
  
  Note that only the UI chrome (navigation, headings, labels) is translated — your recipe content is rendered as written.
  
 diff --git a/docs/server.md b/docs/server.md
-index 15bfc87..23a0491 100644
+index 058118d..2d9d6db 100644
 --- a/docs/server.md
 +++ b/docs/server.md
-@@ -62,7 +62,7 @@ cook server --cors-origin https://cook.example.com
- - `--no-csrf-check` turns that same-origin enforcement off entirely, for both the API and the web UI's new-recipe form. Its former spelling, `--no-cors`, still works.
- - The built-in editor gets its diagnostics and completions from a `cook lsp` subprocess, one per open edit tab, and the endpoint that starts them has no authentication. `--max-lsp-sessions` caps how many run at once (8 by default) so that a client which is not that editor cannot spawn them without bound; beyond the cap the websocket handshake is refused with `503` and the editor retries. Under `--host`, consider `--max-lsp-sessions 0`, which serves the recipes but never starts a subprocess for a remote client.
- - The web interface supports recipe browsing, scaling, search, and shopping list management
--- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
-+- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `ru-RU`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
+@@ -91,7 +91,7 @@ cook server --host
+ - The built-in editor gets its diagnostics and completions from a `cook lsp` subprocess, one per open edit tab, and the endpoint that starts them has no authentication unless [sign-in](#signing-in-to-make-changes) is on. `--max-lsp-sessions` caps how many run at once (8 by default) so that a client which is not that editor cannot spawn them without bound; beyond the cap the websocket handshake is refused with `503` and the editor retries. Under `--host`, consider `--max-lsp-sessions 0`, which serves the recipes but never starts a subprocess for a remote client.
+ - The web interface supports recipe browsing, scaling, search, editing, and shopping list management
+ - A recipe or menu that declares a whole number of `servings` is scaled by servings: the stepper starts at its own servings and goes from half a serving up, with no upper limit (`/recipe/Pizza?servings=3`). Any other keeps the multiplier (`?scale=1.5`, from 0.5 to 200). `?scale=` links still work on both and, on a recipe with servings, show as the servings they give. A menu links each recipe it references by servings when that recipe declares them (`?servings=4`), and by its factor otherwise (`?scale=2`)
+-- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `it-IT`, `ja-JP`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
++- The UI language is negotiated per request from the browser's `Accept-Language` header — each visitor sees the interface in their own language (supported: `en-US`, `de-DE`, `nl-NL`, `fr-FR`, `es-ES`, `eu-ES`, `sv-SE`, `it-IT`, `ja-JP`, `ru-RU`). For static sites, see the `--lang` flag of [`cook build web`](build.md#localization).
  - Mobile-friendly responsive layout
  
- ## Web feeds
+ ## Containers
 diff --git a/locales/en-US/common.ftl b/locales/en-US/common.ftl
-index d6a2b86..e256071 100644
+index 4df30e5..0a9545c 100644
 --- a/locales/en-US/common.ftl
 +++ b/locales/en-US/common.ftl
-@@ -66,3 +66,9 @@ aria-dismiss = Dismiss
- aria-decrease-scale = Decrease scale
- aria-increase-scale = Increase scale
+@@ -180,3 +180,9 @@ aria-increase-scale = Increase scale
+ aria-decrease-servings = Decrease servings
+ aria-increase-servings = Increase servings
  aria-close = Close
 +
 +# Menu and footer
@@ -39,10 +39,10 @@ index d6a2b86..e256071 100644
 +footer-built-with = Built with
 +footer-view-source = View source
 diff --git a/locales/en-US/recipes.ftl b/locales/en-US/recipes.ftl
-index 1b4efd5..e320041 100644
+index 4553623..b3c1b8a 100644
 --- a/locales/en-US/recipes.ftl
 +++ b/locales/en-US/recipes.ftl
-@@ -23,6 +23,9 @@ recipe-print = Print Recipe
+@@ -31,6 +31,9 @@ recipe-print = Print Recipe
  recipe-added = Added!
  recipe-main-section = Main
  recipe-preparation = preparation
@@ -323,15 +323,15 @@ index 0000000..0a30838
 +shopping-copy-include-aisles = С названиями отделов
 +shopping-copy-include-amounts = С количеством
 diff --git a/src/build/mod.rs b/src/build/mod.rs
-index c2601eb..ba3508d 100644
+index e21a4ee..1549ef5 100644
 --- a/src/build/mod.rs
 +++ b/src/build/mod.rs
 @@ -74,7 +74,7 @@ pub struct WebBuildArgs {
      ///
      /// Accepts a BCP-47 tag like `de-DE`, or a bare language code like `de`
      /// that matches a supported region. Supported: en-US, de-DE, nl-NL,
--    /// fr-FR, es-ES, eu-ES, sv-SE.
-+    /// fr-FR, es-ES, eu-ES, sv-SE, ru-RU.
+-    /// fr-FR, es-ES, eu-ES, sv-SE, it-IT, ja-JP.
++    /// fr-FR, es-ES, eu-ES, sv-SE, it-IT, ja-JP, ru-RU.
      #[arg(long, value_parser = parse_lang_arg)]
      pub lang: Option<LanguageIdentifier>,
  
@@ -339,28 +339,28 @@ index c2601eb..ba3508d 100644
  fn parse_lang_arg(s: &str) -> Result<LanguageIdentifier, String> {
      parse_supported_language(s).ok_or_else(|| {
          format!(
--            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE"
-+            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE, ru-RU"
+-            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE, it-IT, ja-JP"
++            "unsupported language '{s}'. Supported: en-US, de-DE, nl-NL, fr-FR, es-ES, eu-ES, sv-SE, it-IT, ja-JP, ru-RU"
          )
      })
  }
 diff --git a/src/web/language.rs b/src/web/language.rs
-index fac29cb..b2a767e 100644
+index 2ff037a..748636f 100644
 --- a/src/web/language.rs
 +++ b/src/web/language.rs
-@@ -17,9 +17,10 @@ pub const FR_FR: LanguageIdentifier = langid!("fr-FR");
- pub const ES_ES: LanguageIdentifier = langid!("es-ES");
- pub const EU_ES: LanguageIdentifier = langid!("eu-ES");
+@@ -19,9 +19,10 @@ pub const EU_ES: LanguageIdentifier = langid!("eu-ES");
  pub const SV_SE: LanguageIdentifier = langid!("sv-SE");
+ pub const IT_IT: LanguageIdentifier = langid!("it-IT");
+ pub const JA_JP: LanguageIdentifier = langid!("ja-JP");
 +pub const RU_RU: LanguageIdentifier = langid!("ru-RU");
  
- pub const SUPPORTED_LANGUAGES: &[LanguageIdentifier] =
--    &[EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE];
-+    &[EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE, RU_RU];
+ pub const SUPPORTED_LANGUAGES: &[LanguageIdentifier] = &[
+-    EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE, IT_IT, JA_JP,
++    EN_US, DE_DE, NL_NL, FR_FR, ES_ES, EU_ES, SV_SE, IT_IT, JA_JP, RU_RU,
+ ];
  
  /// Per-request feature visibility flags, read from cookies.
- #[derive(Clone, Copy, Debug)]
-@@ -238,6 +239,7 @@ mod locale_tests {
+@@ -241,6 +242,7 @@ mod locale_tests {
      #[test]
      fn test_system_locale_bare_language_code() {
          assert_eq!(language_from_system_locale(Some("sv".into())), SV_SE);
@@ -369,10 +369,10 @@ index fac29cb..b2a767e 100644
  
      #[test]
 diff --git a/templates/base.html b/templates/base.html
-index b199814..ceeb1c8 100644
+index fafae5a..fd6d059 100644
 --- a/templates/base.html
 +++ b/templates/base.html
-@@ -337,12 +337,12 @@
+@@ -364,12 +364,12 @@
                                  {% endif %}
                                  <button onclick="showShortcutsHelp(); document.getElementById('more-dropdown').classList.add('hidden');" class="menu-item">
                                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -387,7 +387,7 @@ index b199814..ceeb1c8 100644
                                  </button>
                              </div>
                          </div>
-@@ -357,11 +357,11 @@
+@@ -384,11 +384,11 @@
  
          {% if static_mode %}
          <footer class="mt-12 mb-6 text-center text-sm text-faint print:hidden">
@@ -402,12 +402,12 @@ index b199814..ceeb1c8 100644
          </footer>
          {% endif %}
 diff --git a/templates/preferences.html b/templates/preferences.html
-index 2971f46..4f21fc8 100644
+index e145017..606f94c 100644
 --- a/templates/preferences.html
 +++ b/templates/preferences.html
-@@ -39,6 +39,10 @@
-                         class="language-btn btn {% if tr.lang_string() == "sv-SE" %}btn-primary{% endif %}">
-                     🇸🇪 Svenska
+@@ -47,6 +47,10 @@
+                         class="language-btn btn {% if tr.lang_string() == "ja-JP" %}btn-primary{% endif %}">
+                     🇯🇵 日本語
                  </button>
 +                <button onclick="setLanguage('ru-RU')" aria-pressed="{% if tr.lang_string() == "ru-RU" %}true{% else %}false{% endif %}"
 +                        class="language-btn btn {% if tr.lang_string() == "ru-RU" %}btn-primary{% endif %}">
@@ -417,12 +417,12 @@ index 2971f46..4f21fc8 100644
              <p class="text-sm text-muted mt-3">Your language preference will be saved in a cookie.</p>
          </div>
 diff --git a/templates/recipe.html b/templates/recipe.html
-index 1e7c4a2..ac8762a 100644
+index 8395765..a08638b 100644
 --- a/templates/recipe.html
 +++ b/templates/recipe.html
-@@ -68,15 +68,15 @@
-                     <span class="hidden lg:inline">{{ tr.t("recipe-add-to-shopping") }}</span>
+@@ -100,15 +100,15 @@
                  </button>
+                 {% endif %}
                  {% endif %}
 -                <button id="start-cooking-btn" onclick="startCookingMode()" class="btn btn-primary" title="Start Cooking">
 +                <button id="start-cooking-btn" onclick="startCookingMode()" class="btn btn-primary" title="{{ tr.t("recipe-start-cooking") }}">
